@@ -11,20 +11,21 @@ class HashTable {
         Costumer* costumer;
     } Node;
 
-    Node* InitNode(const Costumer& costumer);
+    Node* InitNode(Costumer* costumer);
     void DeleteNode(Node* node);
 
     HashTable();
     ~HashTable();
     int HashFunction(const int c_id);
     Node* Search(const int c_id);
-    Node* Insert(const Costumer& costumer);
+    Node* Insert(int c_id, int phone);
     void Rehash();
+    void DeleteOldTable(Node** table_to_delete, int size);
 
     private:
     Node** table;
     int size;
-    int number_of_elements;
+    int capacity;
 };
 
 #endif // HASH_TABLE_H
