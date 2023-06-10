@@ -1,15 +1,13 @@
 #ifndef RECORDS_COMPANY_H
 #define RECORDS_COMPANY_H
 
-#include "utilesWet2.h"
-#include "UnionFind.h"
-#include "Record.h"
-
-
 class RecordsCompany {
 private:
     UnionFind records;
     Record *records_arr;
+    HashTable costumers;
+    AVLTree<int, Costumer*> members;
+    int num_costumers;
 
 public:
     RecordsCompany();

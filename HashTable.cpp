@@ -54,7 +54,7 @@ HashTable::Node* HashTable::Search(const int c_id) {
     int index = HashFunction(c_id);
     Node* curr = table[index];
     while (curr) {
-        if (curr->costumer->getID() == c_id) {
+        if (curr->costumer->GetID() == c_id) {
             return curr;
         }
         curr = curr->next;
@@ -62,13 +62,9 @@ HashTable::Node* HashTable::Search(const int c_id) {
     return nullptr;
 }
 
-HashTable::Node* HashTable::Insert(int c_id, int phone) {
-    if (Search(c_id)) {
-        return nullptr;
-    }
-    Costumer* costumer = new Costumer(c_id, phone);
+HashTable::Node* HashTable::Insert(Costumer* costumer) {
     Node* node_to_insert = InitNode(costumer);
-    int index = HashFunction(c_id);
+    int index = HashFunction(costumer->GetID());
     if (table[index] == nullptr) {
         table[index] = node_to_insert;
         size++;
@@ -96,7 +92,7 @@ void HashTable::Rehash() {
         for (int i = 0; i < capacity; i++) {
             Node* curr = old_table[i];
             while (curr) {
-                Insert(curr->costumer->getID(), curr->costumer->getPhone());
+                Insert(curr->costumer);
                 curr = curr->next;
             }
         }
@@ -115,4 +111,14 @@ void HashTable::DeleteOldTable(Node** table_to_delete, int size) {
         }
     }
     delete[] table;
+}
+
+void HashTable::InitMonthlyExpenses() {
+    for (int i = 0; i < size; i++) {
+        Node* curr = table[i];
+        while (curr) {
+            curr->costumer->AddToMonthlyExpenses(-curr->costumer->GetMonthlyExpenses());
+            curr = curr->next;
+        }
+    }
 }

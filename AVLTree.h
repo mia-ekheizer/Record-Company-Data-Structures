@@ -15,6 +15,7 @@ public:
         Key key;
         Val val;
         int height;
+        int total_amount;
     } Node;
 
     // Tree functions
@@ -310,6 +311,7 @@ typename AVLTree<Key, Val>::Node *AVLTree<Key, Val>::InitNode(const Key &key, co
     node->key = key;
     node->val = val;
     node->height = 0;
+    node->total_amount = 0;
     return node;
 }
 

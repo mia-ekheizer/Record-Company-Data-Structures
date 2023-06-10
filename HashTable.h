@@ -18,9 +18,10 @@ class HashTable {
     ~HashTable();
     int HashFunction(const int c_id);
     Node* Search(const int c_id);
-    Node* Insert(int c_id, int phone);
+    Node* Insert(Costumer* costumer);
     void Rehash();
     void DeleteOldTable(Node** table_to_delete, int size);
+    void InitMonthlyExpenses();
 
     private:
     Node** table;

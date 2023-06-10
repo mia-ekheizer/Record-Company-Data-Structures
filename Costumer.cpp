@@ -1,17 +1,25 @@
 #include "Costumer.h"
 
-int Costumer::getID() const {
+int Costumer::GetID() const {
     return c_id;
 }
 
-int Costumer::getPhone() const {
+int Costumer::GetPhone() const {
     return phone;
 }
 
-bool Costumer::isMember() const {
+bool Costumer::IsMember() const {
     return is_member;
 }
 
-int Costumer::getMonthlyExpenses() const {
+int Costumer::GetMonthlyExpenses() const {
     return monthly_expenses;
+}
+
+void Costumer::AddToMonthlyExpenses(int num) {
+    monthly_expenses += num;
+}
+
+void Costumer::SetMember() {
+    is_member = true;
 }
