@@ -41,7 +41,6 @@ public:
     bool IsDaddyOfTwo(const Node *node) const;
     Node *GetSmallestVal() const;
     Node *GetBiggestVal() const;
-    Node* GetClosestFromAbove(const Key& key) const;
     Node* GetClosestFromBelow(const Key& key) const;
 
     // Roll functions
@@ -608,29 +607,10 @@ void AVLTree<Key, Val>::BalanceTreeAfterDeletion(Node *node) {
 }
 
 template<class Key, class Val>
-AVLTree<Key, Val>::Node* AVLTree<Key, Val>::GetClosestFromAbove(const Key& key) const {
-    Node* node_of_key = Find(key)
-    if (node_of_key) {
-        return node_of_key;
-    }
-    Node *curr = this->m_root;
-    while (curr) {
-        if ((curr->key > key && !curr->left) || 
-        (curr->key > key && curr->left->key < key)) {
-            return curr;
-        } else if (curr->key < key) {
-            curr = curr->right;
-        } else if (curr->key > key) {
-            curr = curr->left;
-        }
-    }
-}
-
-template<class Key, class Val>
 AVLTree<Key, Val>::Node* AVLTree<Key, Val>::GetClosestFromBelow(const Key& key) const {
     Node* node_of_key = Find(key)
     if (node_of_key) {
-        return node_of_key;
+        return GetClosestFromBelow(node_of_key);
     }
     Node* curr = this->m_root;
     while (curr) {

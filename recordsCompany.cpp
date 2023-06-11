@@ -93,7 +93,26 @@ StatusType RecordsCompany::makeMember(int c_id) {
     } catch (const std::bad_alloc& e) {
         return ALLOCATION_ERROR;
     }
+    SetPrize(members, new_member);
     return SUCCESS;
+}
+
+void RecordsCompany::SetPrize(AVLTree<int, Costumer*> members, Costumer* new_member) {
+    AVLTree<int, Costumer*>::Node* curr = members.GetRoot();
+    if (curr == nullptr) {
+        return;
+    }
+    int sum_prizes = 0;
+    while (curr->key != new_member->GetID()) {
+        sum_prizes += curr->val->GetPrize();
+        if (curr->key < new_member->GetID()) {
+            curr = curr->right;
+        }
+        else {
+            curr = curr->left;
+        }
+    }
+    new_member->AddToPrize(-sum_prizes);
 }
 
 Output_t<bool> RecordsCompany::isMember(int c_id) {
@@ -127,8 +146,7 @@ StatusType RecordsCompany::addPrize(int c_id1, int c_id2, double amount) {
     if (c_id1 < 0 || c_id2 < c_id1 || amount <= 0) {
         return INVALID_INPUT;
     }
-    AVLTree<int, Costumer*>::Node* min_node = members.GetClosestFromAbove(c_id1);
-    min_node = members.GetClosestFromAbove(min_node); // stop one before c_id1
+    AVLTree<int, Costumer*>::Node* min_node = members.GetClosestFromBelow(c_id1);
     AVLTree<int, Costumer*>::Node* max_node = members.GetClosestFromBelow(c_id2);
     addPrizeAux(max_node->val->GetID(), amount);
     addPrizeAux(min_node->val->GetID(), -amount);

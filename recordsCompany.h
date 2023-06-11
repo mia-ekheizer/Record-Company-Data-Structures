@@ -16,6 +16,7 @@ public:
     StatusType addCostumer(int c_id, int phone);
     Output_t<int> getPhone(int c_id);
     StatusType makeMember(int c_id);
+    void SetPrize(AVLTree<int, Costumer*> members, Costumer* new_member);
     Output_t<bool> isMember(int c_id);
     StatusType buyRecord(int c_id, int r_id);
     StatusType addPrize(int c_id1, int c_id2, double amount);

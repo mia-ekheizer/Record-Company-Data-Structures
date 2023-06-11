@@ -2,7 +2,8 @@
 #include "Costumer.h"
 #include "AVLTree.h"
 
-HashTable::HashTable() : table(new AVLTree<int, Costumer*>[1]), size(0), capacity(1) {
+HashTable::HashTable() : table(new AVLTree<int, Costumer*>[10]), size(0),
+ capacity(10) {
 }
 
 HashTable::~HashTable() {
@@ -78,6 +79,6 @@ void HashTable::InitMonthlyExpensesAux(AVLTree<int, Costumer*>::Node* node) {
     }
     InitMonthlyExpensesAux(node->left);
     node->val->AddToMonthlyExpenses(-node->val->GetMonthlyExpenses());
-    node->val->AddToPrize(-node->val->GetPrize()); // is it part of newMonth?
+    node->val->AddToPrize(-node->val->GetPrize());
     InitMonthlyExpensesAux(node->right);
 }
