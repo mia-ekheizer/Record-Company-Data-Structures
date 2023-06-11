@@ -68,25 +68,25 @@ Output_t<int> RecordsCompany::getPhone(int c_id) {
     if (c_id < 0) {
         return Output_t<int>(INVALID_INPUT);
     }
-    HashTable::Node* costumer_node = costumers.Search(c_id);
+    AVLTree<int, Costumer*>::Node* costumer_node = costumers.Search(c_id);
     if (!costumer_node) {
         return Output_t<int>(DOESNT_EXISTS);
     }
-    return Output_t<int>(costumer_node->costumer->GetPhone());
+    return Output_t<int>(costumer_node->val->GetPhone());
 }
 
 StatusType RecordsCompany::makeMember(int c_id) {
     if (c_id < 0) {
         return INVALID_INPUT;
     }
-    HashTable::Node* costumer_node = costumers.Search(c_id);
+    AVLTree<int, Costumer*>::Node* costumer_node = costumers.Search(c_id);
     if (!costumer_node) {
         return DOESNT_EXISTS;
     }
-    if (costumer_node->costumer->IsMember()) {
+    if (costumer_node->val->IsMember()) {
         return ALREADY_EXISTS;
     }
-    Costumer* new_member = costumer_node->costumer;
+    Costumer* new_member = costumer_node->val;
     new_member->SetMember();
     try {
         members.Insert(c_id, new_member);
@@ -100,11 +100,11 @@ Output_t<bool> RecordsCompany::isMember(int c_id) {
     if (c_id < 0) {
         return Output_t<bool>(INVALID_INPUT);
     }
-    HashTable::Node* costumer_node = costumers.Search(c_id);
+    AVLTree<int, Costumer*>::Node* costumer_node = costumers.Search(c_id);
     if (!costumer_node) {
         return Output_t<bool>(DOESNT_EXISTS);
     }
-    return Output_t<bool>(costumer_node->costumer->IsMember());
+    return Output_t<bool>(costumer_node->val->IsMember());
 }
 
 StatusType RecordsCompany::buyRecord(int c_id, int r_id) {
@@ -123,12 +123,73 @@ StatusType RecordsCompany::buyRecord(int c_id, int r_id) {
     return SUCCESS;
 }
 
-StatusType RecordsCompany::addPrize(int c_id1, int c_id2, double  amount) {
+StatusType RecordsCompany::addPrize(int c_id1, int c_id2, double amount) {
+    if (c_id1 < 0 || c_id2 < c_id1 || amount <= 0) {
+        return INVALID_INPUT;
+    }
+    AVLTree<int, Costumer*>::Node* min_node = members.GetClosestFromAbove(c_id1);
+    min_node = members.GetClosestFromAbove(min_node); // stop one before c_id1
+    AVLTree<int, Costumer*>::Node* max_node = members.GetClosestFromBelow(c_id2);
+    addPrizeAux(max_node->val->GetID(), amount);
+    addPrizeAux(min_node->val->GetID(), -amount);
+    return SUCCESS;
+}
 
+void RecordsCompany::addPrizeAux(int c_id, double amount) {
+    if (members.GetRoot() == nullptr) {
+        return;
+    }
+    AVLTree<int, Costumer*>::Node* curr = members.GetRoot();
+    bool first_right = false;
+    bool first_left = false;
+    bool last_right = false;
+    while (curr) {
+        if (curr->key == c_id) {
+            if (!last_right) {
+                curr->val->AddToPrize(amount);
+            }
+            if (curr->right) {
+                curr->right->val->AddToPrize(-amount);
+            }
+            return;
+        } else if (curr->key < c_id) {
+            if (!first_right) {
+                first_right = true;
+                curr->val->AddToPrize(amount);
+            }
+            curr = curr->right;
+            last_right = true;
+        } else if (curr->key > c_id) {
+            if (!first_left) {
+                first_left = true;
+                curr->val->AddToPrize(-amount);
+            }
+            curr = curr->left;
+            last_right = false;
+        }
+    }
 }
 
 Output_t<double> RecordsCompany::getExpenses(int c_id) {
-
+    if (c_id < 0) {
+        return Output_t<double>(INVALID_INPUT);
+    }
+    AVLTree<int, Costumer*>::Node* node_of_member = members.Find(c_id);
+    if (!node_of_member) {
+        return Output_t<double>(DOESNT_EXISTS);
+    }
+    int sum_prizes = 0;
+    AVLTree<int, Costumer*>::Node* curr = members.GetRoot();
+    while (curr->val->GetID() != c_id) {
+        sum_prizes += curr->val->GetPrize();
+        if (curr->val->GetID() < c_id) {
+            curr = curr->right;
+        }
+        else {
+            curr = curr->left;
+        }
+    }
+    return Output_t<double>(curr->val->GetMonthlyExpenses() - sum_prizes);
 }
 
 StatusType RecordsCompany::putOnTop(int r_id1, int r_id2) {

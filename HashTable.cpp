@@ -1,47 +1,13 @@
 #include "HashTable.h"
 #include "Costumer.h"
+#include "AVLTree.h"
 
-HashTable::Node* HashTable::InitNode(Costumer* costumer) {
-    Node* node = new Node;
-    node->prev = nullptr;
-    node->next = nullptr;
-    node->costumer = costumer;
-    return node;
-}
-
-void HashTable::DeleteNode(Node* node) {
-    if (node == nullptr) {
-        return;
-    }
-    if (node->prev) {
-        node->prev->next = nullptr;
-    }
-    if (node->next) {
-        node->next->prev = nullptr;
-    }
-    node->prev = nullptr;
-    node->next = nullptr;
-    delete node->costumer;
-    delete node;
-}
-
-HashTable::HashTable() : size(0), capacity(1) {
-    this->table = new Node*[1];
-    this->table[0] = nullptr;
+HashTable::HashTable() : table(new AVLTree<int, Costumer*>[1]), size(0), capacity(1) {
 }
 
 HashTable::~HashTable() {
     for (int i = 0; i < size; i++) {
-        if (table[i] == nullptr) {
-            delete[] table;
-            break;
-        }
-        Node* curr = table[i];
-        while (curr) {
-            Node* to_delete = curr;
-            curr = curr->next;
-            DeleteNode(to_delete);
-        }
+        table[i].DeleteFullTree(table[i].GetRoot());
     }
     delete[] table;
 }
@@ -50,75 +16,68 @@ int HashTable::HashFunction(const int c_id) {
     return c_id % this->size;
 }
 
-HashTable::Node* HashTable::Search(const int c_id) {
+AVLTree<int, Costumer*>::Node* HashTable::Search(const int c_id) {
     int index = HashFunction(c_id);
-    Node* curr = table[index];
-    while (curr) {
-        if (curr->costumer->GetID() == c_id) {
-            return curr;
-        }
-        curr = curr->next;
-    }
-    return nullptr;
+    return table[index].Find(c_id);
 }
 
-HashTable::Node* HashTable::Insert(Costumer* costumer) {
-    Node* node_to_insert = InitNode(costumer);
+AVLTree<int, Costumer*>::Node* HashTable::Insert(Costumer* costumer) {
     int index = HashFunction(costumer->GetID());
-    if (table[index] == nullptr) {
-        table[index] = node_to_insert;
+    AVLTree<int, Costumer*>::Node* node;
+    if (table[index].IsEmpty()) {
+        node = table[index].Insert(costumer->GetID(), costumer);
         size++;
         Rehash();
     }
     else {
-        Node* head = table[index];
-        head->prev = node_to_insert;
-        node_to_insert->next = head;
-        table[index] = node_to_insert;
+        node = table[index].Insert(costumer->GetID(), costumer);
     }
-    return node_to_insert;
+    return node;
 }
 
 void HashTable::Rehash() {
     if (2*size == capacity) {
-        Node** old_table = table;
-        int old_size = this->size;
-        Node** new_table = new Node*[2*capacity];
-        this->table = new_table;
-        this->size *= 2;
-        for (int i = 0; i < 2*capacity; i++) {
-            new_table[i] = nullptr;
-        }
-        for (int i = 0; i < capacity; i++) {
-            Node* curr = old_table[i];
-            while (curr) {
-                Insert(curr->costumer);
-                curr = curr->next;
-            }
-        }
+        AVLTree<int, Costumer*>* old_table = table;
         this->capacity *= 2;
-        DeleteOldTable(old_table, old_size);
+        this->table = new AVLTree<int, Costumer*>[this->capacity];
+        for (int i = 0; i < capacity; i++) { 
+            this->table[i] = AVLTree<int, Costumer*>();
+        }
+        for (int i = 0; i < size; i++) {
+            this->CopyTreeToHash(old_table[i].GetRoot());
+        }
+        DeleteOldTable(old_table);
     }
 }
 
-void HashTable::DeleteOldTable(Node** table_to_delete, int size) {
-    for (int i = 0; i < size; i++) {
-        Node* curr = table_to_delete[i];
-        while (curr) {
-            Node* node_to_delete = curr;
-            curr = curr->next;
-            DeleteNode(node_to_delete);
-        }
+void HashTable::CopyTreeToHash(AVLTree<int, Costumer*>::Node* node) {
+    if (node == nullptr) {
+        return;
     }
-    delete[] table;
+    CopyTreeToHash(node->left);
+    this->Insert(node->val);
+    CopyTreeToHash(node->right);
+}
+
+void HashTable::DeleteOldTable(AVLTree<int, Costumer*>* table_to_delete) {
+    for (int i = 0; i < size; i++) {
+        table_to_delete[i].DeleteFullTree(table_to_delete[i].GetRoot());
+    }
+    delete[] table_to_delete;
 }
 
 void HashTable::InitMonthlyExpenses() {
     for (int i = 0; i < size; i++) {
-        Node* curr = table[i];
-        while (curr) {
-            curr->costumer->AddToMonthlyExpenses(-curr->costumer->GetMonthlyExpenses());
-            curr = curr->next;
-        }
+        InitMonthlyExpensesAux(table[i].GetRoot());
     }
+}
+
+void HashTable::InitMonthlyExpensesAux(AVLTree<int, Costumer*>::Node* node) {
+    if (node == nullptr) {
+        return;
+    }
+    InitMonthlyExpensesAux(node->left);
+    node->val->AddToMonthlyExpenses(-node->val->GetMonthlyExpenses());
+    node->val->AddToPrize(-node->val->GetPrize()); // is it part of newMonth?
+    InitMonthlyExpensesAux(node->right);
 }

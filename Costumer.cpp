@@ -23,3 +23,11 @@ void Costumer::AddToMonthlyExpenses(int num) {
 void Costumer::SetMember() {
     is_member = true;
 }
+
+void Costumer::AddToPrize(int num) {
+    prize += num;
+}
+
+int Costumer::GetPrize() {
+    return prize;
+}

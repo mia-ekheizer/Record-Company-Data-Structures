@@ -15,7 +15,6 @@ public:
         Key key;
         Val val;
         int height;
-        int total_amount;
     } Node;
 
     // Tree functions
@@ -31,7 +30,6 @@ public:
     void DecSize();
     Node *successor(Node *node);
 
-
     // Node functions
     Node *InitNode(const Key &key, const Val &val);
     void DeleteNode(Node *node);
@@ -43,6 +41,8 @@ public:
     bool IsDaddyOfTwo(const Node *node) const;
     Node *GetSmallestVal() const;
     Node *GetBiggestVal() const;
+    Node* GetClosestFromAbove(const Key& key) const;
+    Node* GetClosestFromBelow(const Key& key) const;
 
     // Roll functions
     void RollLL(Node *grandpa);
@@ -311,7 +311,6 @@ typename AVLTree<Key, Val>::Node *AVLTree<Key, Val>::InitNode(const Key &key, co
     node->key = key;
     node->val = val;
     node->height = 0;
-    node->total_amount = 0;
     return node;
 }
 
@@ -605,6 +604,43 @@ void AVLTree<Key, Val>::BalanceTreeAfterDeletion(Node *node) {
     }
     if (node->daddy != nullptr) {
         BalanceTreeAfterDeletion(node->daddy);
+    }
+}
+
+template<class Key, class Val>
+AVLTree<Key, Val>::Node* AVLTree<Key, Val>::GetClosestFromAbove(const Key& key) const {
+    Node* node_of_key = Find(key)
+    if (node_of_key) {
+        return node_of_key;
+    }
+    Node *curr = this->m_root;
+    while (curr) {
+        if ((curr->key > key && !curr->left) || 
+        (curr->key > key && curr->left->key < key)) {
+            return curr;
+        } else if (curr->key < key) {
+            curr = curr->right;
+        } else if (curr->key > key) {
+            curr = curr->left;
+        }
+    }
+}
+
+template<class Key, class Val>
+AVLTree<Key, Val>::Node* AVLTree<Key, Val>::GetClosestFromBelow(const Key& key) const {
+    Node* node_of_key = Find(key)
+    if (node_of_key) {
+        return node_of_key;
+    }
+    Node* curr = this->m_root;
+    while (curr) {
+        if ((curr->key < key && !curr->right) || (curr->key < key && curr->right->key > key)) {
+            return curr;
+        } else if (curr->key < key) {
+            curr = curr->right;
+        } else if (curr->key > key) {
+            curr = curr->left;
+        }
     }
 }
 
