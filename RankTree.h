@@ -1,12 +1,8 @@
-//
-// Created by Amit on 28/04/2023.
-//
-
-#ifndef AVLTREE_H
-#define AVLTREE_H
+#ifndef RANKTREE_H
+#define RANKTREE_H
 
 template<class Key, class Val>
-class AVLTree {
+class RankTree {
 public:
     typedef struct Node {
         Node *daddy;
@@ -15,12 +11,13 @@ public:
         Key key;
         Val val;
         int height;
+        int rank;
     } Node;
 
     // Tree functions
-    AVLTree() : m_root(nullptr), m_size(0) {};
-    AVLTree &operator=(const AVLTree<Key, Val> &other) = default;
-    ~AVLTree();
+    RankTree() : m_root(nullptr), m_size(0) {};
+    RankTree &operator=(const AVLTree<Key, Val> &other) = default;
+    ~RankTree();
     Node *Find(const Key &key) const;
     void SetRoot(Node *node);
     Node *GetRoot();
@@ -41,6 +38,7 @@ public:
     bool IsDaddyOfTwo(const Node *node) const;
     Node *GetSmallestVal() const;
     Node *GetBiggestVal() const;
+    Node* GetClosestFromBelow(const Key& key) const;
 
     // Roll functions
     void RollLL(Node *grandpa);
@@ -62,11 +60,10 @@ public:
 private:
     Node *m_root;
     int m_size;
-
 };
 
 template<class Key, class Val>
-void AVLTree<Key, Val>::Delete(const Key &key) {
+void RankTree<Key, Val>::Delete(const Key &key) {
     Node *node = Find(key);
     if (!node) {
         return;
@@ -96,6 +93,7 @@ void AVLTree<Key, Val>::Delete(const Key &key) {
         if (!node->daddy) { //if node is root
             m_root = node->right;
             node->right->daddy = nullptr;
+            m_root->rank = node->rank;
             DeleteNode(node);
             DecSize();
             return;
@@ -107,6 +105,7 @@ void AVLTree<Key, Val>::Delete(const Key &key) {
             } else {
                 dad->right = node->right;
             }
+            dad->rank = node->rank;
             DeleteNode(node);
             BalanceTreeAfterDeletion(dad);
             DecSize();
@@ -118,6 +117,7 @@ void AVLTree<Key, Val>::Delete(const Key &key) {
         if (!node->daddy) { //if node is root
             m_root = node->left;
             node->left->daddy = nullptr;
+            m_root->rank = node->rank;
             DeleteNode(node);
             DecSize();
             return;
@@ -129,6 +129,7 @@ void AVLTree<Key, Val>::Delete(const Key &key) {
             } else {
                 dad->right = node->left;
             }
+            dad->rank = node->rank;
             DeleteNode(node);
             BalanceTreeAfterDeletion(dad);
             DecSize();
@@ -136,7 +137,7 @@ void AVLTree<Key, Val>::Delete(const Key &key) {
         }
     }
         //case 4: node has two sons
-    else {
+    else { // need to check deeply
         Node *closest = successor(node);
         Node *dadOfClosest = closest->daddy;
         if (dadOfClosest->right == closest && closest->right) {
@@ -170,6 +171,7 @@ void AVLTree<Key, Val>::Delete(const Key &key) {
             }
         }
         closest->height = node->height;
+        closest->rank = node->rank;
         if (dadOfClosest == node) {
             dadOfClosest = nullptr;
         }
@@ -180,17 +182,17 @@ void AVLTree<Key, Val>::Delete(const Key &key) {
 }
 
 template<class Key, class Val>
-void AVLTree<Key, Val>::DecSize() {
+void RankTree<Key, Val>::DecSize() {
     this->m_size--;
 }
 
 template<class Key, class Val>
-void AVLTree<Key, Val>::IncSize() {
+void RankTree<Key, Val>::IncSize() {
     this->m_size++;
 }
 
 template<class Key, class Val>
-typename AVLTree<Key, Val>::Node *AVLTree<Key, Val>::successor(AVLTree::Node *node) {
+typename RankTree<Key, Val>::Node *RankTree<Key, Val>::successor(RankTree::Node *node) {
     if (node->right) {
         // If the node has a right child, find the minimum node in the right subtree
         return GetClosestFromAbove(node);
@@ -211,12 +213,12 @@ typename AVLTree<Key, Val>::Node *AVLTree<Key, Val>::successor(AVLTree::Node *no
 }
 
 template<class Key, class Val>
-int AVLTree<Key, Val>::GetSize() const {
+int RankTree<Key, Val>::GetSize() const {
     return this->m_size;
 }
 
 template<class Key, class Val>
-typename AVLTree<Key, Val>::Node *AVLTree<Key, Val>::GetBiggestVal() const {
+typename RankTree<Key, Val>::Node *RankTree<Key, Val>::GetBiggestVal() const {
     Node *node = m_root;
     if (node == nullptr) {
         return nullptr;
@@ -228,7 +230,7 @@ typename AVLTree<Key, Val>::Node *AVLTree<Key, Val>::GetBiggestVal() const {
 }
 
 template<class Key, class Val>
-typename AVLTree<Key, Val>::Node *AVLTree<Key, Val>::GetSmallestVal() const {
+typename RankTree<Key, Val>::Node *RankTree<Key, Val>::GetSmallestVal() const {
     Node *node = m_root;
     if (node == nullptr) {
         return nullptr;
@@ -240,7 +242,7 @@ typename AVLTree<Key, Val>::Node *AVLTree<Key, Val>::GetSmallestVal() const {
 }
 
 template<class Key, class Val>
-void AVLTree<Key, Val>::DeleteNode(AVLTree::Node *node) {
+void RankTree<Key, Val>::DeleteNode(RankTree::Node *node) {
     if (node == nullptr) {
         return;
     }
@@ -261,17 +263,15 @@ static int max(int a, int b) {
 }
 
 template<class Key, class Val>
-int AVLTree<Key, Val>::getHeight(const AVLTree::Node *node) {
-    {
-        if (node == nullptr) {
-            return -1;
-        }
-        return 1 + max(getHeight(node->left), getHeight(node->right));
+int RankTree<Key, Val>::getHeight(const RankTree::Node *node) {
+    if (node == nullptr) {
+        return -1;
     }
+    return 1 + max(getHeight(node->left), getHeight(node->right));
 }
 
 template<class Key, class Val>
-bool AVLTree<Key, Val>::IsDaddyOfTwo(const AVLTree::Node *node) const {
+bool RankTree<Key, Val>::IsDaddyOfTwo(const RankTree::Node *node) const {
     if (node == nullptr) {
         return false;
     }
@@ -279,12 +279,12 @@ bool AVLTree<Key, Val>::IsDaddyOfTwo(const AVLTree::Node *node) const {
 }
 
 template<class Key, class Val>
-AVLTree<Key, Val>::~AVLTree() {
+RankTree<Key, Val>::~RankTree() {
     DeleteFullTree(m_root);
 }
 
 template<class Key, class Val>
-void AVLTree<Key, Val>::DeleteFullTree(Node *node) {
+void RankTree<Key, Val>::DeleteFullTree(Node *node) {
     if (node != nullptr) {
         DeleteFullTree(node->left);
         DeleteFullTree(node->right);
@@ -301,7 +301,7 @@ void AVLTree<Key, Val>::DeleteFullTree(Node *node) {
 }
 
 template<class Key, class Val>
-typename AVLTree<Key, Val>::Node *AVLTree<Key, Val>::InitNode(const Key &key, const Val &val) {
+typename RankTree<Key, Val>::Node *RankTree<Key, Val>::InitNode(const Key &key, const Val &val) {
     Node *node = new Node;
     node->daddy = nullptr;
     node->left = nullptr;
@@ -309,18 +309,19 @@ typename AVLTree<Key, Val>::Node *AVLTree<Key, Val>::InitNode(const Key &key, co
     node->key = key;
     node->val = val;
     node->height = 0;
+    node->rank = 0;
     return node;
 }
 
 template<class Key, class Val>
-int AVLTree<Key, Val>::CalcBF(const Node *node) {
+int RankTree<Key, Val>::CalcBF(const Node *node) {
     int leftHeight = (node->left) ? node->left->height : -1;
     int rightHeight = (node->right) ? node->right->height : -1;
     return leftHeight - rightHeight;
 }
 
 template<class Key, class Val>
-typename AVLTree<Key, Val>::Node *AVLTree<Key, Val>::GetClosestFromAbove(const Node *node) const {
+typename RankTree<Key, Val>::Node *RankTree<Key, Val>::GetClosestFromAbove(const Node *node) const {
     if (node == nullptr) {
         return nullptr;
     }
@@ -335,7 +336,7 @@ typename AVLTree<Key, Val>::Node *AVLTree<Key, Val>::GetClosestFromAbove(const N
 }
 
 template<class Key, class Val>
-typename AVLTree<Key, Val>::Node *AVLTree<Key, Val>::GetClosestFromBelow(const Node *node) const {
+typename RankTree<Key, Val>::Node *RankTree<Key, Val>::GetClosestFromBelow(const Node *node) const {
     if (node == nullptr) {
         return nullptr;
     }
@@ -350,7 +351,7 @@ typename AVLTree<Key, Val>::Node *AVLTree<Key, Val>::GetClosestFromBelow(const N
 }
 
 template<class Key, class Val>
-typename AVLTree<Key, Val>::Node *AVLTree<Key, Val>::Find(const Key &key) const {
+typename RankTree<Key, Val>::Node *RankTree<Key, Val>::Find(const Key &key) const {
     if (m_root == nullptr) {
         return nullptr;
     }
@@ -371,7 +372,7 @@ typename AVLTree<Key, Val>::Node *AVLTree<Key, Val>::Find(const Key &key) const 
 }
 
 template<class Key, class Val>
-void AVLTree<Key, Val>::SetRoot(Node *node) {
+void RankTree<Key, Val>::SetRoot(Node *node) {
     if (!m_root) {
         m_size++;
     }
@@ -379,12 +380,12 @@ void AVLTree<Key, Val>::SetRoot(Node *node) {
 }
 
 template<class Key, class Val>
-typename AVLTree<Key, Val>::Node *AVLTree<Key, Val>::GetRoot() {
+typename RankTree<Key, Val>::Node *RankTree<Key, Val>::GetRoot() {
     return this->m_root;
 }
 
 template<class Key, class Val>
-bool AVLTree<Key, Val>::IsEmpty() const {
+bool RankTree<Key, Val>::IsEmpty() const {
     return this->m_root == nullptr;
 }
 
@@ -602,6 +603,24 @@ void AVLTree<Key, Val>::BalanceTreeAfterDeletion(Node *node) {
     }
     if (node->daddy != nullptr) {
         BalanceTreeAfterDeletion(node->daddy);
+    }
+}
+
+template<class Key, class Val>
+AVLTree<Key, Val>::Node* AVLTree<Key, Val>::GetClosestFromBelow(const Key& key) const {
+    Node* node_of_key = Find(key)
+    if (node_of_key) {
+        return GetClosestFromBelow(node_of_key);
+    }
+    Node* curr = this->m_root;
+    while (curr) {
+        if ((curr->key < key && !curr->right) || (curr->key < key && curr->right->key > key)) {
+            return curr;
+        } else if (curr->key < key) {
+            curr = curr->right;
+        } else if (curr->key > key) {
+            curr = curr->left;
+        }
     }
 }
 
