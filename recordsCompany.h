@@ -4,6 +4,7 @@
 class Costumer;
 
 class RecordsCompany {
+
 private:
     UnionFind records;
     Record *records_arr;

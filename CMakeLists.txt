@@ -9,7 +9,9 @@ add_executable(data_structures_wet_2
         mainWet2.cpp
         recordsCompany.h
         utilesWet2.h
-        UnionFind.h
+        UnionFind.h UnionFind.cpp
         Record.cpp Record.h
         AVLTree.h
-        HashTable.h HashTable.cpp recordsCompany.cpp)
+        HashTable.h HashTable.cpp
+        recordsCompany.cpp
+        )
