@@ -39,6 +39,9 @@ public:
     Node *GetSmallestVal() const;
     Node *GetBiggestVal() const;
     Node* GetClosestFromBelow(const Key& key) const;
+    void InitRanks(Node* node);
+    void AddToRanks(Node* node, int amount);
+    int GetSumOfRanks(Node* node);
 
     // Roll functions
     void RollLL(Node *grandpa);
@@ -390,9 +393,14 @@ bool RankTree<Key, Val>::IsEmpty() const {
 }
 
 template<class Key, class Val>
-void AVLTree<Key, Val>::RollLL(Node *grandpa) {
+void RankTree<Key, Val>::RollLL(Node *grandpa) {
     Node *papa = grandpa->left;
     Node *otherSon = papa->right;
+    int papa_rank = papa->rank;
+    int grandpa_rank = grandpa->rank;
+    papa->left->rank += papa_rank + grandpa_rank;
+    papa->rank += grandpa_rank;
+    grandpa->rank -= papa_rank;
     papa->right = grandpa;
     if (grandpa->daddy == nullptr) {
         m_root = papa;
@@ -420,9 +428,14 @@ void AVLTree<Key, Val>::RollLL(Node *grandpa) {
 }
 
 template<class Key, class Val>
-void AVLTree<Key, Val>::RollRR(Node *grandpa) {
+void RankTree<Key, Val>::RollRR(Node *grandpa) {
     Node *papa = grandpa->right;
     Node *otherSon = papa->left;
+    int papa_rank = papa->rank;
+    int grandpa_rank = grandpa->rank;
+    papa->right->rank -= grandpa_rank;
+    papa->rank += grandpa_rank;
+    grandpa->rank -= papa_rank;
     papa->left = grandpa;
     if (grandpa->daddy == nullptr) {
         m_root = papa;
@@ -447,9 +460,15 @@ void AVLTree<Key, Val>::RollRR(Node *grandpa) {
 }
 
 template<class Key, class Val>
-void AVLTree<Key, Val>::RollLR(Node *grandpa) {
+void RankTree<Key, Val>::RollLR(Node *grandpa) {
     Node *papa = grandpa->left;
     Node *son = papa->right;
+    int son_rank = son->rank;
+    int papa_rank = papa->rank;
+    int grandpa_rank = grandpa->rank;
+    son->rank += papa_rank + grandpa_rank;
+    papa->rank += grandpa_rank - son_rank;
+    grandpa->rank -= son_rank;
     if (son->left) {
         papa->right = son->left;
         papa->right->daddy = papa;
@@ -483,9 +502,15 @@ void AVLTree<Key, Val>::RollLR(Node *grandpa) {
 }
 
 template<class Key, class Val>
-void AVLTree<Key, Val>::RollRL(Node *grandpa) {
+void RankTree<Key, Val>::RollRL(Node *grandpa) {
     Node *papa = grandpa->right;
     Node *son = papa->left;
+    int son_rank = son->rank;
+    int papa_rank = papa->rank;
+    int grandpa_rank = grandpa->rank;
+    son->rank += papa_rank + grandpa_rank;
+    papa->rank += grandpa_rank - son_rank;
+    grandpa->rank -= son_rank;
     if (son->right) {
         papa->left = son->right;
         papa->left->daddy = papa;
@@ -519,7 +544,7 @@ void AVLTree<Key, Val>::RollRL(Node *grandpa) {
 }
 
 template<class Key, class Val>
-typename AVLTree<Key, Val>::Node *AVLTree<Key, Val>::Insert(const Key &key, const Val &val) {
+typename RankTree<Key, Val>::Node *RankTree<Key, Val>::Insert(const Key &key, const Val &val) {
     if (Find(key)) {
         return nullptr;
     }
@@ -531,18 +556,23 @@ typename AVLTree<Key, Val>::Node *AVLTree<Key, Val>::Insert(const Key &key, cons
     }
     // find the place to insert the new node and insert it
     Node *curr = m_root;
+    int sum_ranks = 0;
     while (curr != nullptr) {
         if (key < curr->key) {
             if (curr->left == nullptr) {
                 curr->left = newNode;
+                curr->left->rank = -sum_ranks;
                 break;
             }
+            sum_ranks += curr->rank;
             curr = curr->left;
         } else if (key > curr->key) {
             if (curr->right == nullptr) {
                 curr->right = newNode;
+                curr->right->rank = -sum_ranks;
                 break;
             }
+            sum_ranks += curr->rank;
             curr = curr->right;
         }
     }
@@ -554,7 +584,7 @@ typename AVLTree<Key, Val>::Node *AVLTree<Key, Val>::Insert(const Key &key, cons
 }
 
 template<class Key, class Val>
-void AVLTree<Key, Val>::CheckNRoll(Node *node) {
+void RankTree<Key, Val>::CheckNRoll(Node *node) {
     Node *curr = node;
     while (curr != m_root) {
         Node *daddy = curr->daddy;
@@ -575,7 +605,7 @@ void AVLTree<Key, Val>::CheckNRoll(Node *node) {
 }
 
 template<class Key, class Val>
-void AVLTree<Key, Val>::PickRoll(Node *daddy, int BF) {
+void RankTree<Key, Val>::PickRoll(Node *daddy, int BF) {
     if (BF == 2) {
         CalcBF(daddy->left) >= 0 ? RollLL(daddy) : RollLR(daddy);
     } else {
@@ -584,7 +614,7 @@ void AVLTree<Key, Val>::PickRoll(Node *daddy, int BF) {
 }
 
 template<class Key, class Val>
-bool AVLTree<Key, Val>::IsLeaf(const Node *node) const {
+bool RankTree<Key, Val>::IsLeaf(const Node *node) const {
     if (node->left == nullptr && node->right == nullptr) {
         return true;
     }
@@ -592,7 +622,7 @@ bool AVLTree<Key, Val>::IsLeaf(const Node *node) const {
 }
 
 template<class Key, class Val>
-void AVLTree<Key, Val>::BalanceTreeAfterDeletion(Node *node) {
+void RankTree<Key, Val>::BalanceTreeAfterDeletion(Node *node) {
     if (node == nullptr) {
         return;
     }
@@ -607,7 +637,7 @@ void AVLTree<Key, Val>::BalanceTreeAfterDeletion(Node *node) {
 }
 
 template<class Key, class Val>
-AVLTree<Key, Val>::Node* AVLTree<Key, Val>::GetClosestFromBelow(const Key& key) const {
+RankTree<Key, Val>::Node* RankTree<Key, Val>::GetClosestFromBelow(const Key& key) const {
     Node* node_of_key = Find(key)
     if (node_of_key) {
         return GetClosestFromBelow(node_of_key);
@@ -624,4 +654,68 @@ AVLTree<Key, Val>::Node* AVLTree<Key, Val>::GetClosestFromBelow(const Key& key) 
     }
 }
 
-#endif // AVLTREE_H
+template<class Key, class Val>
+void RankTree<Key, Val>::InitRanks(Node* node) {
+    if (node != nullptr) {
+        InitRanks(node->left);
+        InitRanks(node->right);
+        node->rank = 0;
+    }
+}
+
+template<class Key, class Val>
+void RankTree<Key, Val>::AddToRanks(Node* node, int amount) {
+    if (node == nullptr || m_root == nullptr) {
+        return;
+    }
+    Node* curr = m_root;
+    bool first_right = false;
+    bool first_left = false;
+    bool last_right = false;
+    while (curr) {
+        if (curr->key == node->key) {
+            if (!last_right) {
+                node->rank += amount;
+            }
+            if (curr->right) {
+                curr->right->rank -= amount;
+            }
+            return;
+        } else if (curr->key < c_id) {
+            if (!first_right) {
+                first_right = true;
+                curr->rank += amount;
+            }
+            curr = curr->right;
+            last_right = true;
+        } else if (curr->key > c_id) {
+            if (!first_left) {
+                first_left = true;
+                curr->rank -= amount;
+            }
+            curr = curr->left;
+            last_right = false;
+        }
+    }
+}
+
+template<class Key, class Val>
+int RankTree<Key, Val>::GetSumOfRanks(Node* node) {
+    if (node == nullptr || m_root == nullptr) {
+        return;
+    }
+    int sum_ranks = 0;
+    Node* curr = m_root;
+    while (curr->key != node->key) {
+        sum_ranks += curr->rank;
+        if (curr->key < node->key) {
+            curr = curr->right;
+        }
+        else {
+            curr = curr->left;
+        }
+    }
+    return sum_ranks;
+}
+
+#endif // RANKTREE_H

@@ -4,6 +4,7 @@
 #include "Record.h"
 #include "HashTable.h"
 #include "AVLTree.h"
+#include "RankTree.h"
 #include "Costumer.h"
 #include "memory"
 #define EMPTY 0
@@ -11,8 +12,8 @@
 RecordsCompany::RecordsCompany() :
         records(nullptr, EMPTY),
         records_arr(nullptr),
-        costumers(),
-        members(AVLTree<int, Costumer*>()),
+        costumers(HashTable()),
+        members(RankTree<int, Costumer*>()),
         num_costumers(0)
         {}
 
@@ -37,6 +38,7 @@ StatusType RecordsCompany::newMonth(int *records_stocks, int number_of_records) 
     }
     records = UnionFind(records_stocks, number_of_records);
     costumers.InitMonthlyExpenses();
+    members.InitRanks(members.GetRoot());
     return SUCCESS;
 }
 
@@ -93,26 +95,7 @@ StatusType RecordsCompany::makeMember(int c_id) {
     } catch (const std::bad_alloc& e) {
         return ALLOCATION_ERROR;
     }
-    SetPrize(members, new_member);
     return SUCCESS;
-}
-
-void RecordsCompany::SetPrize(AVLTree<int, Costumer*> members, Costumer* new_member) {
-    AVLTree<int, Costumer*>::Node* curr = members.GetRoot();
-    if (curr == nullptr) {
-        return;
-    }
-    int sum_prizes = 0;
-    while (curr->key != new_member->GetID()) {
-        sum_prizes += curr->val->GetPrize();
-        if (curr->key < new_member->GetID()) {
-            curr = curr->right;
-        }
-        else {
-            curr = curr->left;
-        }
-    }
-    new_member->AddToPrize(-sum_prizes);
 }
 
 Output_t<bool> RecordsCompany::isMember(int c_id) {
@@ -135,7 +118,7 @@ StatusType RecordsCompany::buyRecord(int c_id, int r_id) {
     }
     int price = records_arr[r_id].getPrice(); //important to do this first because price is changed in the next line
     records_arr[r_id].addPurchase();
-    AVLTree<int, Costumer*>::Node* member_node = members.Find(c_id);
+    RankTree<int, Costumer*>::Node* member_node = members.Find(c_id);
     if(member_node) {
         member_node->val->AddToMonthlyExpenses(price);
     }
@@ -146,68 +129,23 @@ StatusType RecordsCompany::addPrize(int c_id1, int c_id2, double amount) {
     if (c_id1 < 0 || c_id2 < c_id1 || amount <= 0) {
         return INVALID_INPUT;
     }
-    AVLTree<int, Costumer*>::Node* min_node = members.GetClosestFromBelow(c_id1);
-    AVLTree<int, Costumer*>::Node* max_node = members.GetClosestFromBelow(c_id2);
-    addPrizeAux(max_node->val->GetID(), amount);
-    addPrizeAux(min_node->val->GetID(), -amount);
+    RankTree<int, Costumer*>::Node* min_node = members.GetClosestFromBelow(c_id1);
+    RankTree<int, Costumer*>::Node* max_node = members.GetClosestFromBelow(c_id2);
+    members.AddToRanks(max_node, amount);
+    members.AddToRanks(min_node, -amount);
     return SUCCESS;
-}
-
-void RecordsCompany::addPrizeAux(int c_id, double amount) {
-    if (members.GetRoot() == nullptr) {
-        return;
-    }
-    AVLTree<int, Costumer*>::Node* curr = members.GetRoot();
-    bool first_right = false;
-    bool first_left = false;
-    bool last_right = false;
-    while (curr) {
-        if (curr->key == c_id) {
-            if (!last_right) {
-                curr->val->AddToPrize(amount);
-            }
-            if (curr->right) {
-                curr->right->val->AddToPrize(-amount);
-            }
-            return;
-        } else if (curr->key < c_id) {
-            if (!first_right) {
-                first_right = true;
-                curr->val->AddToPrize(amount);
-            }
-            curr = curr->right;
-            last_right = true;
-        } else if (curr->key > c_id) {
-            if (!first_left) {
-                first_left = true;
-                curr->val->AddToPrize(-amount);
-            }
-            curr = curr->left;
-            last_right = false;
-        }
-    }
 }
 
 Output_t<double> RecordsCompany::getExpenses(int c_id) {
     if (c_id < 0) {
         return Output_t<double>(INVALID_INPUT);
     }
-    AVLTree<int, Costumer*>::Node* node_of_member = members.Find(c_id);
+    RankTree<int, Costumer*>::Node* node_of_member = members.Find(c_id);
     if (!node_of_member) {
         return Output_t<double>(DOESNT_EXISTS);
     }
-    int sum_prizes = 0;
-    AVLTree<int, Costumer*>::Node* curr = members.GetRoot();
-    while (curr->val->GetID() != c_id) {
-        sum_prizes += curr->val->GetPrize();
-        if (curr->val->GetID() < c_id) {
-            curr = curr->right;
-        }
-        else {
-            curr = curr->left;
-        }
-    }
-    return Output_t<double>(curr->val->GetMonthlyExpenses() - sum_prizes);
+    return Output_t<double>(node_of_member->val->GetMonthlyExpenses() - 
+    members.GetSumOfRanks(node_of_member));
 }
 
 StatusType RecordsCompany::putOnTop(int r_id1, int r_id2) {
