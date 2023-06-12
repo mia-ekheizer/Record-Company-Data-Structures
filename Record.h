@@ -28,10 +28,14 @@ public:
     int get_r_id() const;
     int get_num_records() const;
     int get_num_purchases() const;
-    int getExtra() const;
-    void setExtra(int new_extra);
-    int getPrice() const;
-    void addPurchase(int amount = 1);
+    int get_height() const;
+    void set_height(int new_height);
+    int get_extra() const;
+    void set_extra(int new_extra);
+    int get_price() const;
+    void add_purchase(int amount = 1);
+    int get_col() const;
+    void set_col(int new_col);
 
 };
 
