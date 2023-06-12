@@ -47,3 +47,11 @@ int Record::get_col() const {
 void Record::set_height(int new_height) {
     this->height = new_height;
 }
+
+void Record::set_above(Record *new_above) {
+    this->above = new_above;
+}
+
+Record *Record::get_above() const {
+    return above;
+}

@@ -220,6 +220,9 @@ StatusType RecordsCompany::putOnTop(int r_id1, int r_id2) {
     Record *record1 = &records_arr[r_id1];
     Record *record2 = &records_arr[r_id2];
     if (record1 == record2) {
+        return SUCCESS;
+    }
+    if (record1->get_col() == record2->get_col()) {
         return FAILURE;
     }
     if (records.getSpecificSize(r_id1) <= records.getSpecificSize(r_id2)) { //remember that 1 goes on top of 2
@@ -228,7 +231,12 @@ StatusType RecordsCompany::putOnTop(int r_id1, int r_id2) {
         record1->set_extra(record1->get_extra() + record2->get_height());
         record2->set_extra(record2->get_extra() - record1->get_extra()); //important to update record1 first
     }
-    record1->set_col(record2->get_col());
+    record2->set_above(record1);
+    Record* next_record = record1;
+    while (next_record->get_above() != nullptr) {
+        next_record->set_col(record2->get_col());
+        next_record = next_record->get_above();
+    }
     records.unionNodes(r_id1, r_id2); //not sure if this is the right order
     return SUCCESS;
 }
