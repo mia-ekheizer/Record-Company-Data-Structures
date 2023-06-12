@@ -27,15 +27,17 @@ StatusType RecordsCompany::newMonth(int *records_stocks, int number_of_records) 
         return INVALID_INPUT;
     }
     delete[] records_arr;
+
     try {
-        records_arr = new Record[number_of_records];
+        records_arr = new Record*[number_of_records];
     } catch (std::bad_alloc &e) {
         delete[] records_arr;
         records_arr = nullptr;
         return ALLOCATION_ERROR;
     }
     for (int i = 0; i < number_of_records; ++i) {
-        records_arr[i] = Record(i, records_stocks[i], 0, records_stocks[i], i);
+        Record new_record = Record(i, records_stocks[i], 0, records_stocks[i], i);
+        records_arr[i] = &new_record;
     }
     records = UnionFind(records_stocks, number_of_records);
     costumers.InitMonthlyExpenses();
@@ -117,8 +119,8 @@ StatusType RecordsCompany::buyRecord(int c_id, int r_id) {
     if (r_id >= records.getSize() || !costumers.Search(c_id)) {
         return DOESNT_EXISTS;
     }
-    int price = records_arr[r_id].getPrice(); //important to do this first because price is changed in the next line
-    records_arr[r_id].addPurchase();
+    int price = records_arr[r_id]->get_price(); //important to do this first because price is changed in the next line
+    records_arr[r_id]->add_purchase();
     RankTree<int, Costumer*>::Node* member_node = members.Find(c_id);
     if(member_node) {
         member_node->val->AddToMonthlyExpenses(price);
@@ -130,10 +132,8 @@ StatusType RecordsCompany::addPrize(int c_id1, int c_id2, double amount) {
     if (c_id1 < 0 || c_id2 < c_id1 || amount <= 0) {
         return INVALID_INPUT;
     }
-    RankTree<int, Costumer*>::Node* min_node = members.GetClosestFromBelow(c_id1);
-    RankTree<int, Costumer*>::Node* max_node = members.GetClosestFromBelow(c_id2);
-    members.AddToRanks(max_node, amount);
-    members.AddToRanks(min_node, -amount);
+    members.AddToRanks(members.GetClosestFromBelow(c_id2), amount);
+    members.AddToRanks(members.GetClosestFromBelow(c_id1), -amount);
     return SUCCESS;
 }
 
@@ -156,8 +156,8 @@ StatusType RecordsCompany::putOnTop(int r_id1, int r_id2) {
     if (r_id1 >= records.getSize() || r_id2 >= records.getSize()) {
         return DOESNT_EXISTS;
     }
-    Record *record1 = &records_arr[r_id1];
-    Record *record2 = &records_arr[r_id2];
+    Record *record1 = records_arr[r_id1];
+    Record *record2 = records_arr[r_id2];
     if (record1 == record2) {
         return SUCCESS;
     }
@@ -187,8 +187,8 @@ StatusType RecordsCompany::getPlace(int r_id, int *column, int *hight) {
     if (r_id >= records.getSize()) {
         return DOESNT_EXISTS;
     }
-    *column = records_arr[r_id].get_col();
-    records_arr->set_height(r_id);
-    *hight =  records_arr[r_id].get_height();
+    *column = records_arr[r_id]->get_col();
+    records_arr[r_id]->set_height(r_id);
+    *hight =  records_arr[r_id]->get_height();
     return SUCCESS;
 }

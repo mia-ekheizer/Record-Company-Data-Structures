@@ -1,13 +1,16 @@
 #ifndef RECORDS_COMPANY_H
 #define RECORDS_COMPANY_H
 
-class Costumer;
+#include "utilesWet2.h"
+#include "UnionFind.h"
+#include "HashTable.h"
+#include "RankTree.h"
 
 class RecordsCompany {
 
 private:
     UnionFind records;
-    Record *records_arr;
+    Record **records_arr;
     HashTable costumers;
     RankTree<int, Costumer*> members;
     int num_costumers;

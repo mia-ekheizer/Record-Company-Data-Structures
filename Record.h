@@ -22,11 +22,12 @@ public:
     num_records(num_records),
     num_purchases(num_purchases),
     height(height),
+    extra(0),
     col(col),
     above(nullptr)
     {}
 
-    Record() : r_id(-1), num_records(-1), num_purchases(-1), height(-1),extra(0), col(-1), above(nullptr) {} //to show that it's empty
+    Record() : r_id(-1), num_records(-1), num_purchases(-1), height(-1), extra(0), col(-1), above(nullptr) {} //to show that it's empty
 
     int get_r_id() const;
     int get_num_records() const;

@@ -16,7 +16,7 @@ public:
 
     // Tree functions
     RankTree() : m_root(nullptr), m_size(0) {};
-    RankTree &operator=(const AVLTree<Key, Val> &other) = default;
+    RankTree &operator=(const RankTree<Key, Val> &other) = default;
     ~RankTree();
     Node *Find(const Key &key) const;
     void SetRoot(Node *node);
@@ -259,10 +259,6 @@ void RankTree<Key, Val>::DeleteNode(RankTree::Node *node) {
     node->left = nullptr;
     node->right = nullptr;
     delete node;
-}
-
-static int max(int a, int b) {
-    return (a > b) ? a : b;
 }
 
 template<class Key, class Val>
@@ -637,8 +633,8 @@ void RankTree<Key, Val>::BalanceTreeAfterDeletion(Node *node) {
 }
 
 template<class Key, class Val>
-RankTree<Key, Val>::Node* RankTree<Key, Val>::GetClosestFromBelow(const Key& key) const {
-    Node* node_of_key = Find(key)
+typename RankTree<Key, Val>::Node* RankTree<Key, Val>::GetClosestFromBelow(const Key& key) const {
+    Node* node_of_key = Find(key);
     if (node_of_key) {
         return GetClosestFromBelow(node_of_key);
     }
@@ -652,6 +648,7 @@ RankTree<Key, Val>::Node* RankTree<Key, Val>::GetClosestFromBelow(const Key& key
             curr = curr->left;
         }
     }
+    return nullptr;
 }
 
 template<class Key, class Val>
@@ -681,14 +678,14 @@ void RankTree<Key, Val>::AddToRanks(Node* node, int amount) {
                 curr->right->rank -= amount;
             }
             return;
-        } else if (curr->key < c_id) {
+        } else if (curr->key < node->key) {
             if (!first_right) {
                 first_right = true;
                 curr->rank += amount;
             }
             curr = curr->right;
             last_right = true;
-        } else if (curr->key > c_id) {
+        } else if (curr->key > node->key) {
             if (!first_left) {
                 first_left = true;
                 curr->rank -= amount;
@@ -702,7 +699,7 @@ void RankTree<Key, Val>::AddToRanks(Node* node, int amount) {
 template<class Key, class Val>
 int RankTree<Key, Val>::GetSumOfRanks(Node* node) {
     if (node == nullptr || m_root == nullptr) {
-        return;
+        return 0;
     }
     int sum_ranks = 0;
     Node* curr = m_root;

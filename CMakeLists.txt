@@ -14,4 +14,4 @@ add_executable(data_structures_wet_2
         AVLTree.h
         HashTable.h HashTable.cpp
         recordsCompany.cpp
-        )
+        RankTree.h Costumer.cpp)

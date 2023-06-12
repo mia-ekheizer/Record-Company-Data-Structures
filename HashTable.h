@@ -1,6 +1,9 @@
 #ifndef HASH_TABLE_H
 #define HASH_TABLE_H
 
+class Costumer;
+#include "AVLTree.h"
+
 class HashTable {
     public:
     HashTable();

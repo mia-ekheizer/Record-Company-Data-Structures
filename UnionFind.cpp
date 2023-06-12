@@ -8,14 +8,18 @@ UnionFind::UnionFind(int *record_stocks, int num_records) : size(num_records) {
     arr = new Node*[num_records];
     sizes = new int[num_records];
     for (int i = 0; i < num_records; ++i) {
+        arr[i] = new Node;
         arr[i]->index = i;
         arr[i]->daddy = arr[i];
         arr[i]->record = Record(i, record_stocks[i], 0, record_stocks[i], i);
-        sizes[i] = 1;
+        sizes[i] = record_stocks[i];
     }
 }
 
 UnionFind::~UnionFind() {
+    for (int i = 0; i < size; ++i) {
+        delete arr[i];
+    }
     delete[] arr;
     delete[] sizes;
 }
