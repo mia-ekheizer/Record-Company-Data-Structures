@@ -249,12 +249,10 @@ void RankTree<Key, Val>::DeleteNode(RankTree::Node *node) {
     if (node == nullptr) {
         return;
     }
-    if (node->val != nullptr) {
-        delete node->val;
-    }
     if (node == m_root) {
         m_root = nullptr;
     }
+    node->val = nullptr;
     node->daddy = nullptr;
     node->left = nullptr;
     node->right = nullptr;

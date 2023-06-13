@@ -27,7 +27,6 @@ StatusType RecordsCompany::newMonth(int *records_stocks, int number_of_records) 
         return INVALID_INPUT;
     }
     delete[] records_arr;
-
     try {
         records_arr = new Record*[number_of_records];
     } catch (std::bad_alloc &e) {

@@ -14,7 +14,7 @@ HashTable::~HashTable() {
 }
 
 int HashTable::HashFunction(const int c_id) {
-    return c_id % this->size;
+    return c_id % this->capacity;
 }
 
 AVLTree<int, Costumer*>::Node* HashTable::Search(const int c_id) {
