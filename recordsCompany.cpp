@@ -11,7 +11,7 @@
 #define EMPTY 0
 
 RecordsCompany::RecordsCompany() :
-        records(nullptr, EMPTY),
+        records(nullptr, EMPTY, nullptr),
         records_arr(nullptr),
         costumers(HashTable()),
         members(RankTree<int, Costumer*>()),
@@ -26,7 +26,12 @@ StatusType RecordsCompany::newMonth(int *records_stocks, int number_of_records) 
     if (records_stocks == nullptr || number_of_records < 0) {
         return INVALID_INPUT;
     }
-    delete[] records_arr;
+    if (records_arr != nullptr) {
+        for (int i = 0; i < number_of_records; ++i) {
+            delete records_arr[i];
+        }
+        delete[] records_arr;
+    }
     try {
         records_arr = new Record*[number_of_records];
     } catch (std::bad_alloc &e) {
@@ -35,10 +40,9 @@ StatusType RecordsCompany::newMonth(int *records_stocks, int number_of_records) 
         return ALLOCATION_ERROR;
     }
     for (int i = 0; i < number_of_records; ++i) {
-        Record new_record = Record(i, records_stocks[i], 0, records_stocks[i], i);
-        records_arr[i] = &new_record;
+        records_arr[i] = new Record(i, records_stocks[i], 0, records_stocks[i], i);
     }
-    records = UnionFind(records_stocks, number_of_records);
+    records = UnionFind(records_stocks, number_of_records, records_arr);
     costumers.InitMonthlyExpenses();
     members.InitRanks(members.GetRoot());
     return SUCCESS;
@@ -171,7 +175,7 @@ StatusType RecordsCompany::putOnTop(int r_id1, int r_id2) {
     }
     record2->set_above(record1);
     Record* next_record = record1;
-    while (next_record->get_above() != nullptr) {
+    while (next_record != nullptr) {
         next_record->set_col(record2->get_col());
         next_record = next_record->get_above();
     }
@@ -187,7 +191,7 @@ StatusType RecordsCompany::getPlace(int r_id, int *column, int *hight) {
         return DOESNT_EXISTS;
     }
     *column = records_arr[r_id]->get_col();
-    records_arr[r_id]->set_height(r_id);
+    records.set_height(r_id);
     *hight =  records_arr[r_id]->get_height();
     return SUCCESS;
 }

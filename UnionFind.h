@@ -10,13 +10,16 @@
 
 class UnionFind {
 public:
+
     typedef struct Node {
         int index;
         Node *daddy;
-        Record record;
+        Record *record;
     } Node;
 
-    explicit UnionFind(int* record_stocks, int num_records);
+    explicit UnionFind(int* record_stocks, int num_records, Record** record_array);
+    UnionFind(const UnionFind& to_copy);
+    UnionFind& operator=(const UnionFind& to_copy);
     ~UnionFind();
     Node* find(int index);
     void set_height(int index);
