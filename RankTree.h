@@ -710,7 +710,7 @@ int RankTree<Key, Val>::GetSumOfRanks(Node* node) {
             curr = curr->left;
         }
     }
-    return sum_ranks;
+    return sum_ranks + node->rank;
 }
 
 #endif // RANKTREE_H
