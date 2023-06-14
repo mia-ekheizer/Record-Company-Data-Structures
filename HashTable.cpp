@@ -7,7 +7,7 @@ HashTable::HashTable() : table(new AVLTree<int, Costumer*>[10]), size(0),
 }
 
 HashTable::~HashTable() {
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < capacity; i++) {
         table[i].DeleteFullTree(table[i].GetRoot());
     }
     delete[] table;
@@ -28,7 +28,7 @@ AVLTree<int, Costumer*>::Node* HashTable::Insert(Costumer* costumer) {
     if (table[index].IsEmpty()) {
         node = table[index].Insert(costumer->GetID(), costumer);
         size++;
-        Rehash();
+        ResizeTable();
     }
     else {
         node = table[index].Insert(costumer->GetID(), costumer);
@@ -36,18 +36,19 @@ AVLTree<int, Costumer*>::Node* HashTable::Insert(Costumer* costumer) {
     return node;
 }
 
-void HashTable::Rehash() {
-    if (2*size == capacity) {
+void HashTable::ResizeTable() {
+    if (2*size >= capacity) {
         AVLTree<int, Costumer*>* old_table = table;
+        int old_capacity = capacity;
         this->capacity *= 2;
         this->table = new AVLTree<int, Costumer*>[this->capacity];
         for (int i = 0; i < capacity; i++) { 
             this->table[i] = AVLTree<int, Costumer*>();
         }
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < old_capacity; i++) {
             this->CopyTreeToHash(old_table[i].GetRoot());
         }
-        DeleteOldTable(old_table);
+        DeleteOldTable(old_table, old_capacity);
     }
 }
 
@@ -60,15 +61,15 @@ void HashTable::CopyTreeToHash(AVLTree<int, Costumer*>::Node* node) {
     CopyTreeToHash(node->right);
 }
 
-void HashTable::DeleteOldTable(AVLTree<int, Costumer*>* table_to_delete) {
-    for (int i = 0; i < size; i++) {
-        table_to_delete[i].DeleteFullTree(table_to_delete[i].GetRoot());
+void HashTable::DeleteOldTable(AVLTree<int, Costumer*>* table_to_delete, int old_capacity) {
+    for (int i = 0; i < old_capacity; i++) {
+        table_to_delete[i].SemiDeleteFullTree(table_to_delete[i].GetRoot());
     }
     delete[] table_to_delete;
 }
 
 void HashTable::InitMonthlyExpenses() {
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < capacity; i++) {
         InitMonthlyExpensesAux(table[i].GetRoot());
     }
 }

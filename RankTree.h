@@ -664,12 +664,10 @@ void RankTree<Key, Val>::AddToRanks(Node* node, int amount) {
         return;
     }
     Node* curr = m_root;
-    bool first_right = false;
-    bool first_left = false;
-    bool last_right = false;
+    bool row_of_right = false;
     while (curr) {
         if (curr->key == node->key) {
-            if (!last_right) {
+            if (!row_of_right) {
                 node->rank += amount;
             }
             if (curr->right) {
@@ -677,19 +675,17 @@ void RankTree<Key, Val>::AddToRanks(Node* node, int amount) {
             }
             return;
         } else if (curr->key < node->key) {
-            if (!first_right) {
-                first_right = true;
+            if (!row_of_right) {
                 curr->rank += amount;
             }
             curr = curr->right;
-            last_right = true;
+            row_of_right = true;
         } else if (curr->key > node->key) {
-            if (!first_left) {
-                first_left = true;
+            if (row_of_right) {
                 curr->rank -= amount;
             }
             curr = curr->left;
-            last_right = false;
+            row_of_right = false;
         }
     }
 }

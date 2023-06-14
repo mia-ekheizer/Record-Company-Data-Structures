@@ -33,6 +33,7 @@ public:
     // Node functions
     Node *InitNode(const Key &key, const Val &val);
     void DeleteNode(Node *node);
+    void SemiDeleteNode(Node *node);
     static int getHeight(const Node *node);
     static int CalcBF(const Node *node);
     Node *GetClosestFromAbove(const Node *node) const;
@@ -56,6 +57,7 @@ public:
     // Delete functions
     void DeleteFullTree(Node *node);
     void Delete(const Key &key);
+    void SemiDeleteFullTree(Node *node);
     //void Delete(const Key &key);
     void BalanceTreeAfterDeletion(Node *node);
 
@@ -256,6 +258,21 @@ void AVLTree<Key, Val>::DeleteNode(AVLTree::Node *node) {
     delete node;
 }
 
+template<class Key, class Val>
+void AVLTree<Key, Val>::SemiDeleteNode(AVLTree::Node *node) {
+    if (node == nullptr) {
+        return;
+    }
+    if (node == m_root) {
+        m_root = nullptr;
+    }
+    node->val = nullptr;
+    node->daddy = nullptr;
+    node->left = nullptr;
+    node->right = nullptr;
+    delete node;
+}
+
 static int max(int a, int b) {
     return (a > b) ? a : b;
 }
@@ -296,6 +313,23 @@ void AVLTree<Key, Val>::DeleteFullTree(Node *node) {
             node->daddy->right = nullptr;
         }
         DeleteNode(node);
+        DecSize();
+    }
+}
+
+template<class Key, class Val>
+void AVLTree<Key, Val>::SemiDeleteFullTree(Node *node) {
+    if (node != nullptr) {
+        SemiDeleteFullTree(node->left);
+        SemiDeleteFullTree(node->right);
+        if (node == m_root) {
+            m_root = nullptr;
+        } else if (node->daddy->left == node) {
+            node->daddy->left = nullptr;
+        } else {
+            node->daddy->right = nullptr;
+        }
+        SemiDeleteNode(node);
         DecSize();
     }
 }

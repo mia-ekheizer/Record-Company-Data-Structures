@@ -15,10 +15,14 @@ RecordsCompany::RecordsCompany() :
         records_arr(nullptr),
         costumers(HashTable()),
         members(RankTree<int, Costumer*>()),
-        num_costumers(0)
+        num_costumers(0),
+        num_records(0)
         {}
 
 RecordsCompany::~RecordsCompany() { //UF is destroyed in its destructor
+    for (int i = 0; i < num_records; ++i) {
+        delete records_arr[i];
+    }
     delete[] records_arr;
 }
 
@@ -40,8 +44,18 @@ StatusType RecordsCompany::newMonth(int *records_stocks, int number_of_records) 
         return ALLOCATION_ERROR;
     }
     for (int i = 0; i < number_of_records; ++i) {
-        records_arr[i] = new Record(i, records_stocks[i], 0, records_stocks[i], i);
+        try {
+            records_arr[i] = new Record(i, records_stocks[i], 0, records_stocks[i], i);
+        } catch (std::bad_alloc &e) {
+            for (int j = 0; j <= i; j++) {
+                delete records_arr[i];
+            }
+            delete[] records_arr;
+            records_arr = nullptr;
+            return ALLOCATION_ERROR;
+        }
     }
+    num_records = number_of_records;
     records = UnionFind(records_stocks, number_of_records, records_arr);
     costumers.InitMonthlyExpenses();
     members.InitRanks(members.GetRoot());

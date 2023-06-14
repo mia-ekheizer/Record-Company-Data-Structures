@@ -11,9 +11,9 @@ class HashTable {
     int HashFunction(const int c_id);
     AVLTree<int, Costumer*>::Node* Search(const int c_id);
     AVLTree<int, Costumer*>::Node* Insert(Costumer* costumer);
-    void Rehash();
+    void ResizeTable();
     void CopyTreeToHash(AVLTree<int, Costumer*>::Node* node);
-    void DeleteOldTable(AVLTree<int, Costumer*>* table_to_delete);
+    void DeleteOldTable(AVLTree<int, Costumer*>* table_to_delete, int old_capacity);
     void InitMonthlyExpenses();
     void InitMonthlyExpensesAux(AVLTree<int, Costumer*>::Node* node);
 

@@ -14,6 +14,7 @@ private:
     HashTable costumers;
     RankTree<int, Costumer*> members;
     int num_costumers;
+    int num_records;
 
 public:
     RecordsCompany();
