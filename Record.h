@@ -14,20 +14,29 @@ private:
     int height;
     int extra;
     int col;
-    Record* above;
+    Record *above;
+    Record *below;
 
 public:
     Record(int r_id, int num_records, int num_purchases, int height, int col) :
-    r_id(r_id),
-    num_records(num_records),
-    num_purchases(num_purchases),
-    height(height),
-    extra(0),
-    col(col),
-    above(nullptr)
-    {}
+            r_id(r_id),
+            num_records(num_records),
+            num_purchases(num_purchases),
+            height(height),
+            extra(0),
+            col(col),
+            above(nullptr),
+            below(nullptr) {}
 
-    Record() : r_id(-1), num_records(-1), num_purchases(-1), height(-1), extra(0), col(-1), above(nullptr) {} //to show that it's empty
+    Record() :
+            r_id(-1),
+            num_records(-1),
+            num_purchases(-1),
+            height(-1),
+            extra(0),
+            col(-1),
+            above(nullptr),
+            below(nullptr) {} //to show that it's empty
 
     int get_r_id() const;
     int get_num_records() const;
@@ -40,8 +49,10 @@ public:
     void add_purchase(int amount = 1);
     int get_col() const;
     void set_col(int new_col);
-    Record* get_above() const;
-    void set_above(Record* new_above);
+    Record *get_above() const;
+    void set_above(Record *new_above);
+    Record *get_below() const;
+    void set_below(Record *new_below);
 
 };
 
