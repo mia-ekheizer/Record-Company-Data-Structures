@@ -552,13 +552,13 @@ typename RankTree<Key, Val>::Node *RankTree<Key, Val>::Insert(const Key &key, co
     Node *curr = m_root;
     int sum_ranks = 0;
     while (curr != nullptr) {
+        sum_ranks += curr->rank;
         if (key < curr->key) {
             if (curr->left == nullptr) {
                 curr->left = newNode;
                 curr->left->rank = -sum_ranks;
                 break;
             }
-            sum_ranks += curr->rank;
             curr = curr->left;
         } else if (key > curr->key) {
             if (curr->right == nullptr) {
@@ -566,7 +566,6 @@ typename RankTree<Key, Val>::Node *RankTree<Key, Val>::Insert(const Key &key, co
                 curr->right->rank = -sum_ranks;
                 break;
             }
-            sum_ranks += curr->rank;
             curr = curr->right;
         }
     }
