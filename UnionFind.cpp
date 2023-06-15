@@ -98,7 +98,7 @@ void UnionFind::unionNodes(int node1, int node2) {
     if (daddy1 == daddy2) {
         return;
     }
-    if (sizes[daddy1->index] < sizes[daddy2->index]) {
+    if (sizes[daddy1->index] <= sizes[daddy2->index]) {
         daddy1->daddy = daddy2;
         sizes[daddy2->index] += sizes[daddy1->index];
     } else {

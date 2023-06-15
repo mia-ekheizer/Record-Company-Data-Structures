@@ -24,6 +24,7 @@ RecordsCompany::~RecordsCompany() { //UF is destroyed in its destructor
         delete records_arr[i];
     }
     delete[] records_arr;
+    records_arr = nullptr;
 }
 
 StatusType RecordsCompany::newMonth(int *records_stocks, int number_of_records) {
@@ -31,7 +32,7 @@ StatusType RecordsCompany::newMonth(int *records_stocks, int number_of_records) 
         return INVALID_INPUT;
     }
     if (records_arr != nullptr) {
-        for (int i = 0; i < number_of_records; ++i) {
+        for (int i = 0; i < num_records; ++i) {
             delete records_arr[i];
         }
         delete[] records_arr;
@@ -56,7 +57,7 @@ StatusType RecordsCompany::newMonth(int *records_stocks, int number_of_records) 
         }
     }
     num_records = number_of_records;
-    records = UnionFind(records_stocks, number_of_records, records_arr);
+    records = UnionFind(records_stocks, num_records, records_arr);
     costumers.InitMonthlyExpenses();
     members.InitRanks(members.GetRoot());
     return SUCCESS;
@@ -170,14 +171,14 @@ StatusType RecordsCompany::putOnTop(int r_id1, int r_id2) {
     if (r_id1 < 0 || r_id2 < 0) {
         return INVALID_INPUT;
     }
+    if (r_id1 == r_id2) {
+        return FAILURE;
+    }
     if (r_id1 >= records.getSize() || r_id2 >= records.getSize()) {
         return DOESNT_EXISTS;
     }
     Record *record1 = records_arr[r_id1];
     Record *record2 = records_arr[r_id2];
-    if (record1 == record2) {
-        return SUCCESS;
-    }
     if (record1->get_col() == record2->get_col()) {
         return FAILURE;
     }
