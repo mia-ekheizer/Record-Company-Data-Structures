@@ -12,6 +12,7 @@ UnionFind::UnionFind(int *record_stocks, int num_records, Record **record_array)
         arr[i]->index = i;
         arr[i]->daddy = arr[i];
         arr[i]->record = record_array[i];
+        arr[i]->col_height = record_stocks[i];
         sizes[i] = 1;
     }
 }
@@ -33,7 +34,7 @@ UnionFind::Node *UnionFind::find(int index) {
         sum_r += arr[index]->record->get_extra();
         index = arr[index]->daddy->index;
     }
-    //sum_r -= arr[index]->record.get_extra(); // im pretty sure this is not needed, but maybe it is
+    //sum_r += arr[index]->record->get_extra(); // im pretty sure this is not needed, but maybe it is
     while (temp_index != index) {
         to_sub += arr[temp_index]->record->get_extra();
         arr[temp_index]->record->set_extra(sum_r - to_sub + arr[temp_index]->record->get_extra());
@@ -53,6 +54,7 @@ UnionFind::UnionFind(const UnionFind &to_copy) {
         arr[i]->index = i;
         arr[i]->daddy = arr[i];
         arr[i]->record = to_copy.arr[i]->record;
+        arr[i]->col_height = to_copy.arr[i]->col_height;
         sizes[i] = to_copy.sizes[i];
     }
 }
@@ -76,6 +78,7 @@ UnionFind &UnionFind::operator=(const UnionFind &to_copy) {
         arr[i]->index = i;
         arr[i]->daddy = arr[i];
         arr[i]->record = to_copy.arr[i]->record;
+        arr[i]->col_height = to_copy.arr[i]->col_height;
         sizes[i] = to_copy.sizes[i];
     }
     return *this;
@@ -88,7 +91,7 @@ void UnionFind::set_height(int index) {
         total_height += arr[index]->record->get_extra();
         index = arr[index]->daddy->index;
     }
-    arr[temp_index]->record->set_height(total_height + arr[index]->record->get_extra());
+    arr[temp_index]->record->set_height( total_height + arr[index]->record->get_extra());
 }
 
 void UnionFind::unionNodes(int node1, int node2) {
@@ -100,9 +103,11 @@ void UnionFind::unionNodes(int node1, int node2) {
     if (sizes[daddy1->index] <= sizes[daddy2->index]) {
         daddy1->daddy = daddy2;
         sizes[daddy2->index] += sizes[daddy1->index];
+        daddy2->col_height += daddy1->col_height;
     } else {
         daddy2->daddy = daddy1;
         sizes[daddy1->index] += sizes[daddy2->index];
+        daddy1->col_height += daddy2->col_height;
     }
 }
 
@@ -122,6 +127,12 @@ int UnionFind::get_size(int index) {
         index = arr[index]->daddy->index;
     }
     return sizes[index];
+}
+int UnionFind::get_col_height(int index) {
+    while (arr[index]->daddy != arr[index]) {
+        index = arr[index]->daddy->index;
+    }
+    return arr[index]->col_height;
 }
 
 

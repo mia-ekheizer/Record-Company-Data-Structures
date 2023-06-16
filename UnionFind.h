@@ -15,6 +15,7 @@ public:
         int index;
         Node *daddy;
         Record *record;
+        int col_height;
     } Node;
 
     explicit UnionFind(int* record_stocks, int num_records, Record** record_array);
@@ -28,6 +29,7 @@ public:
     int getSpecificSize(int index);
     int getSize() const;
     int get_size(int index);
+    int get_col_height(int index);
 
 private:
 
