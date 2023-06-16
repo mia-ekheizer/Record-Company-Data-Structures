@@ -392,9 +392,8 @@ void RankTree<Key, Val>::RollLL(Node *grandpa) {
     Node *otherSon = papa->right;
     int papa_rank = papa->rank;
     int grandpa_rank = grandpa->rank;
-    papa->left->rank += papa_rank + grandpa_rank;
     papa->rank += grandpa_rank;
-    grandpa->rank -= papa_rank; // not needed, otherSon->rank = papa_rank
+    grandpa->rank = -papa_rank;
     papa->right = grandpa;
     if (grandpa->daddy == nullptr) {
         m_root = papa;
@@ -409,7 +408,8 @@ void RankTree<Key, Val>::RollLL(Node *grandpa) {
     }
     grandpa->daddy = papa;
     if (otherSon) {
-        grandpa->left = otherSon; //?
+        otherSon->rank = papa_rank;
+        grandpa->left = otherSon;
         otherSon->daddy = grandpa;
     } else {
         grandpa->left = nullptr;
