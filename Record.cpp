@@ -55,3 +55,11 @@ void Record::set_above(Record *new_above) {
 Record *Record::get_above() const {
     return above;
 }
+
+Record *Record::get_below() const {
+    return below;
+}
+
+void Record::set_below(Record *new_below) {
+    this->below = new_below;
+}

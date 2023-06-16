@@ -27,6 +27,7 @@ public:
     bool areConnected(Node *node1, Node *node2);
     int getSpecificSize(int index);
     int getSize() const;
+    int get_size(int index);
 
 private:
 

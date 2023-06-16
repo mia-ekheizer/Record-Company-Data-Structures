@@ -12,7 +12,7 @@ UnionFind::UnionFind(int *record_stocks, int num_records, Record **record_array)
         arr[i]->index = i;
         arr[i]->daddy = arr[i];
         arr[i]->record = record_array[i];
-        sizes[i] = record_stocks[i];
+        sizes[i] = 1;
     }
 }
 
@@ -79,7 +79,6 @@ UnionFind &UnionFind::operator=(const UnionFind &to_copy) {
         sizes[i] = to_copy.sizes[i];
     }
     return *this;
-
 }
 
 void UnionFind::set_height(int index) {
@@ -117,6 +116,12 @@ int UnionFind::getSpecificSize(int index) {
 
 int UnionFind::getSize() const {
     return this->size;
+}
+int UnionFind::get_size(int index) {
+    while (arr[index]->daddy != arr[index]) {
+        index = arr[index]->daddy->index;
+    }
+    return sizes[index];
 }
 
 

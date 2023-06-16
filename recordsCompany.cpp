@@ -174,7 +174,7 @@ StatusType RecordsCompany::putOnTop(int r_id1, int r_id2) {
     if (r_id1 == r_id2) {
         return FAILURE;
     }
-    if (r_id1 >= records.getSize() || r_id2 >= records.getSize()) {
+    if (r_id1 >= num_records || r_id2 >= num_records) {
         return DOESNT_EXISTS;
     }
     Record *record1 = records_arr[r_id1];
@@ -182,16 +182,35 @@ StatusType RecordsCompany::putOnTop(int r_id1, int r_id2) {
     if (record1->get_col() == record2->get_col()) {
         return FAILURE;
     }
-    if (records.getSpecificSize(r_id1) <= records.getSpecificSize(r_id2)) { //remember that 1 goes on top of 2
+    int record1_size = records.get_size(r_id1);
+    int record2_size = records.get_size(r_id2);
+    if (record1_size <= record2_size) { //remember that 1 goes on top of 2
         record1->set_extra(record1->get_extra() + record2->get_height() - record2->get_extra());
     } else {
         record1->set_extra(record1->get_extra() + record2->get_height());
         record2->set_extra(record2->get_extra() - record1->get_extra()); //important to update record1 first
     }
-    record2->set_above(record1);
+    Record* top_record = record2;
+    while (top_record->get_above() != nullptr) {
+        top_record = top_record->get_above();
+    }
+    Record* bottom_record = record1;
+    while (bottom_record->get_below() != nullptr) {
+        bottom_record = bottom_record->get_below();
+    }
+    top_record->set_above(bottom_record);
+    bottom_record->set_below(top_record);
+    Record* bottom_col = record2;
+    while (bottom_col->get_below() != nullptr) {
+        bottom_col = bottom_col->get_below();
+    }
+    int record2_col = bottom_col->get_col();
     Record* next_record = record1;
+    while (next_record->get_below() != nullptr) {
+        next_record = next_record->get_below();
+    }
     while (next_record != nullptr) {
-        next_record->set_col(record2->get_col());
+        next_record->set_col(record2_col);
         next_record = next_record->get_above();
     }
     records.unionNodes(r_id1, r_id2); //not sure if this is the right order
