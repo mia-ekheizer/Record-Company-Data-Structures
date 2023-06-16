@@ -26,6 +26,7 @@ public:
     void IncSize();
     void DecSize();
     Node *successor(Node *node);
+    Node* GetSmallestSon(Node* node) const;
 
     // Node functions
     Node *InitNode(const Key &key, const Val &val);
@@ -337,10 +338,22 @@ typename RankTree<Key, Val>::Node *RankTree<Key, Val>::GetClosestFromBelow(const
     if (node == nullptr) {
         return nullptr;
     }
-    Node *curr = node->left;
-    if (curr == nullptr) {
-        return nullptr;
+    if (!node->left) {
+        if (node == m_root) {
+            return nullptr;
+        }
+        if (node->daddy->right == node) {
+            return node->daddy;
+        }
+        else {
+            Node* curr = node->daddy;
+            while (curr->daddy && curr->daddy->left == curr) {
+                curr = curr->daddy;
+            }
+            return curr->daddy;
+        }
     }
+    Node *curr = node->left;
     while (curr->right != nullptr) {
         curr = curr->right;
     }
@@ -457,10 +470,12 @@ template<class Key, class Val>
 void RankTree<Key, Val>::RollLR(Node *grandpa) {
     Node *papa = grandpa->left;
     Node *son = papa->right;
+    int son_rank = son->rank;
     int papa_rank = papa->rank;
     int grandpa_rank = grandpa->rank;
-    papa->rank += grandpa_rank;
-    grandpa->rank = -papa_rank;
+    son->rank += grandpa_rank + papa_rank;
+    grandpa->rank = -(son_rank + papa_rank);
+    papa->rank = -son_rank;
     if (son->left) {
         papa->right = son->left;
         papa->right->daddy = papa;
@@ -497,10 +512,12 @@ template<class Key, class Val>
 void RankTree<Key, Val>::RollRL(Node *grandpa) {
     Node *papa = grandpa->right;
     Node *son = papa->left;
+    int son_rank = son->rank;
     int papa_rank = papa->rank;
     int grandpa_rank = grandpa->rank;
-    papa->rank += grandpa_rank;
-    grandpa->rank = -papa_rank;
+    son->rank += grandpa_rank + papa_rank;
+    grandpa->rank = -(son_rank + papa_rank);
+    papa->rank = -son_rank;
     if (son->right) {
         papa->left = son->right;
         papa->left->daddy = papa;
@@ -633,16 +650,36 @@ typename RankTree<Key, Val>::Node* RankTree<Key, Val>::GetClosestFromBelow(const
     }
     Node* curr = this->m_root;
     while (curr) {
-        if (curr->key < key && (!curr->right ||
-        (GetClosestFromBelow(curr->right) && GetClosestFromBelow(curr->right)->key > key))) {
-            return curr;
-        } else if (curr->key < key) {
-            curr = curr->right;
-        } else if (curr->key > key) {
+        if (curr->key < key) {
+            if (!curr->right) {
+                return curr;
+            }
+            else if (curr->right->key > key) {
+                if (GetSmallestSon(curr->right)->key < key) {
+                    return GetSmallestSon(curr->right);
+                }
+                else {
+                    return curr;
+                }
+            }
+            else {
+                curr = curr->right;
+            }
+        }
+        else if (curr->key > key) {
             curr = curr->left;
         }
     }
     return nullptr;
+}
+
+template<class Key, class Val>
+typename RankTree<Key, Val>::Node* RankTree<Key, Val>::GetSmallestSon(Node* node) const {
+    Node* curr = node;
+    while (curr->left) {
+        curr = curr->left;
+    }
+    return curr;
 }
 
 template<class Key, class Val>
