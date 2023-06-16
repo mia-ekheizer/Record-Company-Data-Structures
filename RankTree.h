@@ -427,9 +427,8 @@ void RankTree<Key, Val>::RollRR(Node *grandpa) {
     Node *otherSon = papa->left;
     int papa_rank = papa->rank;
     int grandpa_rank = grandpa->rank;
-    papa->right->rank -= grandpa_rank;
     papa->rank += grandpa_rank;
-    grandpa->rank -= papa_rank;
+    grandpa->rank = -papa_rank;
     papa->left = grandpa;
     if (grandpa->daddy == nullptr) {
         m_root = papa;
@@ -444,6 +443,7 @@ void RankTree<Key, Val>::RollRR(Node *grandpa) {
     }
     grandpa->daddy = papa;
     if (otherSon) {
+        otherSon->rank = papa_rank;
         grandpa->right = otherSon;
         otherSon->daddy = grandpa;
     } else {
@@ -457,12 +457,10 @@ template<class Key, class Val>
 void RankTree<Key, Val>::RollLR(Node *grandpa) {
     Node *papa = grandpa->left;
     Node *son = papa->right;
-    int son_rank = son->rank;
     int papa_rank = papa->rank;
     int grandpa_rank = grandpa->rank;
-    son->rank += papa_rank + grandpa_rank;
-    papa->rank += grandpa_rank - son_rank;
-    grandpa->rank -= son_rank;
+    papa->rank += grandpa_rank;
+    grandpa->rank = -papa_rank;
     if (son->left) {
         papa->right = son->left;
         papa->right->daddy = papa;
@@ -499,12 +497,10 @@ template<class Key, class Val>
 void RankTree<Key, Val>::RollRL(Node *grandpa) {
     Node *papa = grandpa->right;
     Node *son = papa->left;
-    int son_rank = son->rank;
     int papa_rank = papa->rank;
     int grandpa_rank = grandpa->rank;
-    son->rank += papa_rank + grandpa_rank;
-    papa->rank += grandpa_rank - son_rank;
-    grandpa->rank -= son_rank;
+    papa->rank += grandpa_rank;
+    grandpa->rank = -papa_rank;
     if (son->right) {
         papa->left = son->right;
         papa->left->daddy = papa;
@@ -637,7 +633,8 @@ typename RankTree<Key, Val>::Node* RankTree<Key, Val>::GetClosestFromBelow(const
     }
     Node* curr = this->m_root;
     while (curr) {
-        if ((curr->key < key && !curr->right) || (curr->key < key && curr->right->key > key)) {
+        if (curr->key < key && (!curr->right ||
+        (GetClosestFromBelow(curr->right) && GetClosestFromBelow(curr->right)->key > key))) {
             return curr;
         } else if (curr->key < key) {
             curr = curr->right;
