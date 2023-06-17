@@ -172,13 +172,12 @@ StatusType RecordsCompany::putOnTop(int r_id1, int r_id2) {
     if (r_id1 < 0 || r_id2 < 0) {
         return INVALID_INPUT;
     }
-    if (r_id1 == r_id2) {
-        return FAILURE;
-    }
     if (r_id1 >= num_records || r_id2 >= num_records) {
         return DOESNT_EXISTS;
     }
-    UnionFind::Node *record1_node = records.find(r_id1);
+    if (r_id1 == r_id2) {
+        return FAILURE;
+    }
     UnionFind::Node *record2_node = records.find(r_id2);
     Record *record1 = records.find(r_id1)->record;
     Record *record2 = records.find(r_id2)->record;
