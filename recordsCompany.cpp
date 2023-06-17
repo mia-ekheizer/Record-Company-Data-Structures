@@ -115,7 +115,6 @@ StatusType RecordsCompany::makeMember(int c_id) {
     } catch (const std::bad_alloc &e) {
         return ALLOCATION_ERROR;
     }
-    sum_ranks = getSumRanks();
     return SUCCESS;
 }
 
@@ -150,9 +149,8 @@ StatusType RecordsCompany::addPrize(int c_id1, int c_id2, double amount) {
     if (c_id1 < 0 || c_id2 < c_id1 || amount <= 0) {
         return INVALID_INPUT;
     }
-    members.AddToRanks(members.GetClosestFromBelow(c_id2), amount);
-    members.AddToRanks(members.GetClosestFromBelow(c_id1), -amount);
-    sum_ranks = getSumRanks();
+    members.AddToRanks(c_id2 - 1, amount);
+    members.AddToRanks(c_id1 - 1, -amount);
     return SUCCESS;
 }
 
@@ -231,23 +229,4 @@ StatusType RecordsCompany::getPlace(int r_id, int *column, int *hight) {
     records.set_height(r_id);
     *hight = records_arr[r_id]->get_height();
     return SUCCESS;
-}
-
-int RecordsCompany::getSumRanks() {
-    int num_to_check = 106;
-    if (!members.Find(num_to_check)) {
-        return 0;
-    }
-    int sum = 0;
-    RankTree<int, Costumer*>::Node* curr = members.GetRoot();
-    while (curr->key != num_to_check) {
-        sum += curr->rank;
-        if (curr->key < num_to_check) {
-            curr = curr->right;
-        }
-        else {
-            curr = curr->left;
-        }
-    }
-    return sum + curr->rank;
 }

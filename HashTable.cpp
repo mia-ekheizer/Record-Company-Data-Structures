@@ -80,6 +80,5 @@ void HashTable::InitMonthlyExpensesAux(AVLTree<int, Costumer*>::Node* node) {
     }
     InitMonthlyExpensesAux(node->left);
     node->val->AddToMonthlyExpenses(-node->val->GetMonthlyExpenses());
-    node->val->AddToPrize(-node->val->GetPrize());
     InitMonthlyExpensesAux(node->right);
 }

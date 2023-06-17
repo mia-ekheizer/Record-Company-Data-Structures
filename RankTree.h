@@ -26,8 +26,6 @@ public:
     void IncSize();
     void DecSize();
     Node *successor(Node *node);
-    Node* GetSmallestSon(Node* node) const;
-    Node* GetBiggestSon(Node* node) const;
 
     // Node functions
     Node *InitNode(const Key &key, const Val &val);
@@ -38,9 +36,8 @@ public:
     Node *GetClosestFromBelow(Node *node) const;
     bool IsLeaf(const Node *node) const;
     bool IsDaddyOfTwo(const Node *node) const;
-    Node* GetClosestFromBelow(const Key& key) const;
     void InitRanks(Node* node);
-    void AddToRanks(Node* node, int amount);
+    void AddToRanks(int max, int amount);
     int GetSumOfRanks(Node* node);
 
     // Roll functions
@@ -622,61 +619,6 @@ void RankTree<Key, Val>::BalanceTreeAfterDeletion(Node *node) {
 }
 
 template<class Key, class Val>
-typename RankTree<Key, Val>::Node* RankTree<Key, Val>::GetClosestFromBelow(const Key& key) const {
-    Node* node_of_key = Find(key);
-    if (node_of_key) {
-        return GetClosestFromBelow(node_of_key);
-    }
-    Node* curr = this->m_root;
-    while (curr) {
-        if (curr->key < key) {
-            if (!curr->right) {
-                return curr;
-            }
-            else if (curr->right->key > key) {
-                if (GetSmallestSon(curr->right)->key < key) {
-                    if (curr->right->left && GetBiggestSon(curr->right->left)->key < key) {
-                        return GetBiggestSon(curr->right->left);
-                    }
-                    else {
-                        return GetSmallestSon(curr->right);
-                    }
-                }
-                else {
-                    return curr;
-                }
-            }
-            else {
-                curr = curr->right;
-            }
-        }
-        else if (curr->key > key) {
-            curr = curr->left;
-        }
-    }
-    return nullptr;
-}
-
-template<class Key, class Val>
-typename RankTree<Key, Val>::Node* RankTree<Key, Val>::GetSmallestSon(Node* node) const {
-    Node* curr = node;
-    while (curr->left) {
-        curr = curr->left;
-    }
-    return curr;
-}
-
-template<class Key, class Val>
-typename RankTree<Key, Val>::Node* RankTree<Key, Val>::GetBiggestSon(Node* node) const {
-    Node* curr = node;
-    while (curr->right) {
-        curr = curr->right;
-    }
-    return curr;
-}
-
-
-template<class Key, class Val>
 void RankTree<Key, Val>::InitRanks(Node* node) {
     if (node != nullptr) {
         InitRanks(node->left);
@@ -686,28 +628,28 @@ void RankTree<Key, Val>::InitRanks(Node* node) {
 }
 
 template<class Key, class Val>
-void RankTree<Key, Val>::AddToRanks(Node* node, int amount) {
-    if (node == nullptr || m_root == nullptr) {
+void RankTree<Key, Val>::AddToRanks(int max, int amount) {
+    if (m_root == nullptr) {
         return;
     }
     Node* curr = m_root;
     bool row_of_right = false;
     while (curr) {
-        if (curr->key == node->key) {
+        if (curr->key == max) {
             if (!row_of_right) {
-                node->rank += amount;
+                curr->rank += amount;
             }
             if (curr->right) {
                 curr->right->rank -= amount;
             }
             return;
-        } else if (curr->key < node->key) {
+        } else if (curr->key < max) {
             if (!row_of_right) {
                 curr->rank += amount;
             }
             curr = curr->right;
             row_of_right = true;
-        } else if (curr->key > node->key) {
+        } else if (curr->key > max) {
             if (row_of_right) {
                 curr->rank -= amount;
             }

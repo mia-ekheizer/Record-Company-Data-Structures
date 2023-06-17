@@ -1,17 +1,11 @@
-cmake_minimum_required(VERSION 3.25)
-project(data_structures_wet_2)
+cmake_minimum_required(VERSION 3.0.0)
+project(wet2 VERSION 0.1.0 LANGUAGES C CXX)
 
-set(CMAKE_CXX_STANDARD 14)
+include(CTest)
+enable_testing()
 
-include_directories(.)
+add_executable(wet2 mainWet2.cpp Costumer.cpp HashTable.cpp Record.cpp recordsCompany.cpp UnionFind.cpp)
 
-add_executable(data_structures_wet_2
-        mainWet2.cpp
-        recordsCompany.h
-        utilesWet2.h
-        UnionFind.h UnionFind.cpp
-        Record.cpp Record.h
-        AVLTree.h
-        HashTable.h HashTable.cpp
-        recordsCompany.cpp
-        RankTree.h Costumer.cpp)
+set(CPACK_PROJECT_NAME ${PROJECT_NAME})
+set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
+include(CPack)
