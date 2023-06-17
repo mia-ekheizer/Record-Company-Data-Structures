@@ -15,6 +15,7 @@ private:
     RankTree<int, Costumer*> members;
     int num_costumers;
     int num_records;
+    int sum_ranks;
 
 public:
     RecordsCompany();
@@ -29,6 +30,7 @@ public:
     Output_t<double> getExpenses(int c_id);
     StatusType putOnTop(int r_id1, int r_id2);
     StatusType getPlace(int r_id, int *column, int *hight);
+    int getSumRanks();
 };
 
 #endif
